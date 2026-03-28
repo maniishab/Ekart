@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: 
+  name: ekart-statefulset
+  labels:
+    app: ekartt
+
+spec:
+  serviceName: db-service
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: ekartt
+
+  template:
+    metadata:
+      labels:
+        app: ekartt
+
+    spec:
+      containers:
+        - name: postgres-container
+          image: postgres:15
+
+          ports:
+            - containerPort: 5432
+
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRESS_USER   
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRESS_PASSWORD   
+
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-service
+  labels:
+    app: ekartt
+
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+  selector:
+    app: ekartt
