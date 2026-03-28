@@ -5,9 +5,9 @@ metadata:
   labels:
     app: ekartt
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: ekartt
   ports:
     - port: 80
-      targetPort: 8070
+      targetPort: 8080
